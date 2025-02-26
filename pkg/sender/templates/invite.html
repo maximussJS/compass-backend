@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>You're Invited to Compass App</title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      background-color: #0056b3;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 26px;
+    }
+    .content {
+      padding: 30px;
+      color: #333;
+      line-height: 1.6;
+    }
+    .content a {
+      color: #0056b3;
+      text-decoration: none;
+    }
+    .actions {
+      margin: 30px 0;
+      text-align: center;
+    }
+    .actions p {
+      font-size: 16px;
+      margin-bottom: 20px;
+      color: #555;
+    }
+    .button-container {
+      display: inline-block;
+    }
+    .button {
+      display: inline-block;
+      padding: 14px 28px;
+      margin: 0 10px;
+      font-size: 16px;
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 6px;
+      transition: background-color 0.3s ease;
+      min-width: 180px;
+    }
+    .button-accept {
+      background-color: #28a745;
+      color: #fff;
+    }
+    .button-accept:hover {
+      background-color: #218838;
+    }
+    .button-cancel {
+      background-color: #dc3545;
+      color: #fff;
+    }
+    .button-cancel:hover {
+      background-color: #c82333;
+    }
+    .footer {
+      background-color: #f1f1f1;
+      color: #777;
+      font-size: 13px;
+      text-align: center;
+      padding: 15px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Compass App Invitation</h1>
+  </div>
+  <div class="content">
+    <p>Hello!</p>
+    <p>
+      You have been invited to join the team <strong>{{.TeamName}}</strong> on Compass App by
+      <strong>{{.OwnerName}}</strong> (<a href="mailto:{{.OwnerEmail}}">{{.OwnerEmail}}</a>).
+    </p>
+    <p>
+      This invitation will expire on <strong>{{.ExpiresAt}}</strong>.
+    </p>
+    <div class="actions">
+      <p>
+        Click <strong>Accept</strong> to join the team, or <strong>Cancel</strong> if you do not wish to participate.
+      </p>
+      <div class="button-container">
+        <a href="{{.AcceptLink}}" class="button button-accept">Accept Invitation</a>
+        <a href="{{.CancelLink}}" class="button button-cancel">Cancel Invitation</a>
+      </div>
+    </div>
+    <p>
+      If you have any questions or need further assistance, feel free to contact your team owner at
+      <a href="mailto:{{.OwnerEmail}}">{{.OwnerEmail}}</a>.
+    </p>
+    <p>
+      If you did not expect this invitation, please ignore this email.
+    </p>
+  </div>
+  <div class="footer">
+    &copy; 2025 Compass App. All rights reserved.
+  </div>
+</div>
+</body>
+</html>
