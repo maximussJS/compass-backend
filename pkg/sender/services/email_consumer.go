@@ -15,7 +15,6 @@ import (
 )
 
 type IEmailConsumerService interface {
-	ConsumerFn() pub_sub.RedisConsumerFn
 	Start(ctx context.Context) error
 	Stop(ctx context.Context) error
 }
@@ -60,14 +59,14 @@ func newEmailConsumerService(lc fx.Lifecycle, params emailConsumerServiceParams)
 }
 
 func (s *emailConsumerService) Start(ctx context.Context) error {
-	return s.redisConsumer.Start(ctx, s.channel, s.ConsumerFn())
+	return s.redisConsumer.Start(ctx, s.channel, s.consumerFn())
 }
 
 func (s *emailConsumerService) Stop(ctx context.Context) error {
 	return s.redisConsumer.Stop(ctx)
 }
 
-func (s *emailConsumerService) ConsumerFn() pub_sub.RedisConsumerFn {
+func (s *emailConsumerService) consumerFn() pub_sub.RedisConsumerFn {
 	return func(ctx context.Context, msg *redis.Message) error {
 		var job common_types.EmailJob
 
