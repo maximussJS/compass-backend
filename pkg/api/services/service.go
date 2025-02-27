@@ -1,6 +1,7 @@
 package services
 
 import (
+	"compass-backend/pkg/common/services"
 	"go.uber.org/fx"
 )
 
@@ -9,6 +10,6 @@ var Module = fx.Options(
 	FxCategoryService(),
 	FxTeamInviteService(),
 	FxTeamService(),
-	FxSenderService(),
+	services.FxEmailSenderService(),
 	FxUserService(),
 )

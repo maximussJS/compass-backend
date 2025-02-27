@@ -11,6 +11,7 @@ var Module = fx.Options(
 	FxAuthorizationRoute(),
 	FxTeamInviteRoute(),
 	FxTeamRoute(),
+	FxUserRoute(),
 	common_routes.FxRoutes(),
 	fx.Invoke(func(routes common_routes.Routes) {}),
 )

@@ -8,14 +8,15 @@ import (
 )
 
 type User struct {
-	Id        string             `gorm:"primaryKey" json:"id"`
-	Name      string             `gorm:"size:100;not null" json:"name"`
-	Email     string             `gorm:"size:100;not null;unique" json:"email"`
-	Password  string             `gorm:"size:255" json:"-"`
-	Role      constants.UserRole `gorm:"size:100;not null" json:"role"`
-	Teams     []Team             `gorm:"many2many:team_members;joinForeignKey:UserId;joinReferences:TeamId" json:"teams,omitempty"`
-	CreatedAt time.Time          `json:"createdAt"`
-	UpdatedAt time.Time          `json:"updatedAt"`
+	Id         string             `gorm:"primaryKey" json:"id"`
+	Name       string             `gorm:"size:100;not null" json:"name"`
+	Email      string             `gorm:"size:100;not null;unique" json:"email"`
+	Password   string             `gorm:"size:255" json:"-"`
+	IsVerified bool               `gorm:"default:false" json:"isVerified"`
+	Role       constants.UserRole `gorm:"size:100;not null" json:"role"`
+	Teams      []Team             `gorm:"many2many:team_members;joinForeignKey:UserId;joinReferences:TeamId" json:"teams,omitempty"`
+	CreatedAt  time.Time          `json:"createdAt"`
+	UpdatedAt  time.Time          `json:"updatedAt"`
 }
 
 func (u *User) TableName() string {
@@ -24,7 +25,6 @@ func (u *User) TableName() string {
 
 func (u *User) BeforeCreate(_ *gorm.DB) (err error) {
 	u.Id = uuid.New().String()
-	u.Role = constants.User
 	u.CreatedAt = time.Now()
 	u.UpdatedAt = time.Now()
 	return nil

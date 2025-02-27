@@ -19,8 +19,6 @@ type IEnv interface {
 	GetJwtSecret() []byte
 	GetAuthExpirationDuration() time.Duration
 	GetInviteExpirationDuration() time.Duration
-	GetTeamInviteRedisChannel() string
-	GetUserRegisteredRedisChannel() string
 }
 
 type envParams struct {
@@ -33,9 +31,6 @@ type env struct {
 	common_lib.IEnv
 	JwtSecret string `mapstructure:"JWT_SECRET" validate:"required"`
 	AppUrl    string `mapstructure:"APP_URL" validate:"required"`
-
-	TeamInviteRedisChannel     string `mapstructure:"TEAM_INVITE_REDIS_CHANNEL"`
-	UserRegisteredRedisChannel string `mapstructure:"USER_REGISTERED_REDIS_CHANNEL"`
 
 	AuthExpirationDurationInMinutes   int `mapstructure:"AUTH_EXPIRATION_DURATION_IN_MINUTES"`
 	InviteExpirationDurationInMinutes int `mapstructure:"INVITE_EXPIRATION_DURATION_IN_MINUTES"`
@@ -66,8 +61,6 @@ func newEnv(params envParams) *env {
 		MaxLimit:                          100,
 		AuthExpirationDurationInMinutes:   1440, // 24 hours
 		InviteExpirationDurationInMinutes: 1,
-		TeamInviteRedisChannel:            "team_invite",
-		UserRegisteredRedisChannel:        "user_registered",
 	}
 
 	err = viper.Unmarshal(env)
@@ -105,12 +98,4 @@ func (e *env) GetInviteExpirationDuration() time.Duration {
 
 func (e *env) GetAppUrl() string {
 	return e.AppUrl
-}
-
-func (e *env) GetTeamInviteRedisChannel() string {
-	return e.TeamInviteRedisChannel
-}
-
-func (e *env) GetUserRegisteredRedisChannel() string {
-	return e.UserRegisteredRedisChannel
 }

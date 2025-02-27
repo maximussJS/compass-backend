@@ -19,6 +19,7 @@ type IEnv interface {
 	GetLoggerLevel() zapcore.Level
 	GetEnvironment() constants.AppEnv
 	GetTimeZone() string
+	GetEmailRedisChannel() string
 	GetPort() int
 	GetRequestTimeoutDuration() time.Duration
 	GetMaxMultipartMemory() int64
@@ -32,6 +33,7 @@ type env struct {
 	Environment             string `mapstructure:"ENVIRONMENT" validate:"required"`
 	Port                    int    `mapstructure:"PORT" validate:"required"`
 	TimeZone                string `mapstructure:"TIMEZONE"`
+	EmailRedisChannel       string `mapstructure:"EMAIL_REDIS_CHANNEL"`
 	RequestTimeoutInSeconds int    `mapstructure:"REQUEST_TIMEOUT_IN_SECONDS"`
 	MaxMultipartMemory      int64  `mapstructure:"MAX_MULTIPART_MEMORY"`
 }
@@ -55,6 +57,7 @@ func newEnv() *env {
 	env := &env{
 		RequestTimeoutInSeconds: 30,
 		MaxMultipartMemory:      10 << 20, // 10 MB
+		EmailRedisChannel:       "email-channel",
 	}
 
 	err = viper.Unmarshal(env)
@@ -124,4 +127,8 @@ func (e *env) GetAppName() string {
 
 func (e *env) GetMaxMultipartMemory() int64 {
 	return e.MaxMultipartMemory
+}
+
+func (e *env) GetEmailRedisChannel() string {
+	return e.EmailRedisChannel
 }

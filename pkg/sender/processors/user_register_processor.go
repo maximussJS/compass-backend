@@ -61,7 +61,7 @@ func newUserRegisteredProcessor(lc fx.Lifecycle, params userRegisteredProcessorP
 }
 
 func (p *userRegisteredProcessor) Process(ctx context.Context, msg *redis.Message) error {
-	var job types.SendUserRegisteredEmailJob
+	var job types.SendEmptyUserCreatedEmailJob
 
 	if err := json.Unmarshal([]byte(msg.Payload), &job); err != nil {
 		p.base.logger.Error(fmt.Sprintf("error unmarshalling user registered message: %v", err))

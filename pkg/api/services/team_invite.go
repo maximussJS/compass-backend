@@ -8,6 +8,7 @@ import (
 	common_lib "compass-backend/pkg/common/lib"
 	"compass-backend/pkg/common/models"
 	common_repositories "compass-backend/pkg/common/repositories"
+	common_services "compass-backend/pkg/common/services"
 	common_types "compass-backend/pkg/common/types"
 	"context"
 	"fmt"
@@ -28,7 +29,7 @@ type teamInviteServiceParams struct {
 	Jwt                  lib.IJwt
 	Claims               lib.IClaims
 	Logger               common_lib.ILogger
-	SenderService        ISenderService
+	EmailSender          common_services.IEmailSenderService
 	UserService          IUserService
 	TeamInviteRepository common_repositories.ITeamInviteRepository
 	TeamRepository       common_repositories.ITeamRepository
@@ -39,7 +40,7 @@ type teamInviteService struct {
 	jwt                  lib.IJwt
 	claims               lib.IClaims
 	logger               common_lib.ILogger
-	senderService        ISenderService
+	emailSender          common_services.IEmailSenderService
 	userService          IUserService
 	teamInviteRepository common_repositories.ITeamInviteRepository
 	teamRepository       common_repositories.ITeamRepository
@@ -56,7 +57,7 @@ func newTeamInviteService(params teamInviteServiceParams) ITeamInviteService {
 		claims:               params.Claims,
 		logger:               params.Logger,
 		userService:          params.UserService,
-		senderService:        params.SenderService,
+		emailSender:          params.EmailSender,
 		teamRepository:       params.TeamRepository,
 		teamInviteRepository: params.TeamInviteRepository,
 	}
@@ -110,13 +111,13 @@ func (s *teamInviteService) InviteByEmail(ctx context.Context, email, ownerId st
 		return inviteErr
 	}
 
-	job := common_types.SendTeamInviteEmailJob{
+	job := common_types.SendTeamInviteEmailJobData{
 		Id:         inviteId,
 		AcceptLink: fmt.Sprintf("%s/api/team-invites/accept/%s", s.appUrl, token),
 		CancelLink: fmt.Sprintf("%s/api/team-invites/cancel/%s", s.appUrl, token),
 	}
 
-	sendErr := s.senderService.SendTeamInvite(ctx, job)
+	sendErr := s.emailSender.SendTeamInvite(ctx, job)
 
 	if sendErr != nil {
 		s.logger.Error(fmt.Sprintf("failed to send team invite: %s", sendErr))

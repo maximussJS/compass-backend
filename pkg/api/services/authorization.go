@@ -10,7 +10,6 @@ import (
 	fx_utils "compass-backend/pkg/common/fx"
 	common_lib "compass-backend/pkg/common/lib"
 	common_models "compass-backend/pkg/common/models"
-	common_repositories "compass-backend/pkg/common/repositories"
 	"context"
 	"fmt"
 	"go.uber.org/fx"
@@ -25,17 +24,17 @@ type IAuthorizationService interface {
 type authorizationServiceParams struct {
 	fx.In
 
-	Logger         common_lib.ILogger
-	Jwt            lib.IJwt
-	Claims         lib.IClaims
-	UserRepository common_repositories.IUserRepository
+	Logger      common_lib.ILogger
+	Jwt         lib.IJwt
+	Claims      lib.IClaims
+	userService IUserService
 }
 
 type authorizationService struct {
-	logger         common_lib.ILogger
-	jwt            lib.IJwt
-	claims         lib.IClaims
-	userRepository common_repositories.IUserRepository
+	logger      common_lib.ILogger
+	jwt         lib.IJwt
+	claims      lib.IClaims
+	userService IUserService
 }
 
 func FxAuthorizationService() fx.Option {
@@ -44,22 +43,20 @@ func FxAuthorizationService() fx.Option {
 
 func newAuthorizationService(params authorizationServiceParams) *authorizationService {
 	return &authorizationService{
-		logger:         params.Logger,
-		jwt:            params.Jwt,
-		claims:         params.Claims,
-		userRepository: params.UserRepository,
+		logger:      params.Logger,
+		jwt:         params.Jwt,
+		claims:      params.Claims,
+		userService: params.userService,
 	}
 }
 
 func (s *authorizationService) SignInByPassword(ctx context.Context, dto authorization_dto.SignInByPasswordRequest) (string, error) {
-	user, userErr := s.userRepository.GetByEmail(ctx, dto.Email)
+	user, userErr := s.userService.GetByEmail(ctx, dto.Email)
 
 	if userErr != nil {
 		s.logger.Error(fmt.Sprintf("failed to get user by email: %s", userErr))
 		return "", userErr
 	}
-
-	fmt.Printf("user: %t %s %t\n", user == nil, user.Password, crypto_utils.VerifyHash(dto.Password, user.Password))
 
 	if user == nil {
 		return "", api_errors.ErrorInvalidCredentials
@@ -84,41 +81,21 @@ func (s *authorizationService) SignInByPassword(ctx context.Context, dto authori
 }
 
 func (s *authorizationService) SignUpByPassword(ctx context.Context, dto authorization_dto.SignUpByPasswordRequest) (*common_models.User, error) {
-	existingUser, existingErr := s.userRepository.GetByEmail(ctx, dto.Email)
+	existingUser, userErr := s.userService.GetByEmail(ctx, dto.Email)
 
-	if existingErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to get user by email: %s", existingErr))
-		return nil, existingErr
+	if userErr != nil {
+		s.logger.Error(fmt.Sprintf("failed to get user by email: %s", userErr))
+		return nil, userErr
 	}
 
 	if existingUser != nil {
-		return existingUser, api_errors.ErrorUserAlreadyExists
+		return nil, api_errors.ErrorUserAlreadyExists
 	}
 
-	hashedPassword, hashErr := crypto_utils.Hash(dto.Password)
-
-	if hashErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to hash password: %s", hashErr))
-		return nil, hashErr
-	}
-
-	user := common_models.User{
-		Email:    dto.Email,
-		Name:     dto.Name,
-		Password: hashedPassword,
-	}
-
-	id, createErr := s.userRepository.Create(ctx, user)
-
-	if createErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to create user: %s", createErr))
-		return nil, createErr
-	}
-
-	newUser, newUserErr := s.userRepository.GetById(ctx, id)
+	newUser, newUserErr := s.userService.CreateUserByCredentials(ctx, dto.Email, dto.Name, dto.Password)
 
 	if newUserErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to get new user by id: %s", newUserErr))
+		s.logger.Error(fmt.Sprintf("failed to create user by credentials: %s", newUserErr))
 		return nil, newUserErr
 	}
 
@@ -134,7 +111,7 @@ func (s *authorizationService) GetUserByToken(ctx context.Context, token string)
 		return nil, api_errors.ErrorInvalidToken
 	}
 
-	user, userErr := s.userRepository.GetById(ctx, authClaims.UserId)
+	user, userErr := s.userService.GetById(ctx, authClaims.UserId)
 
 	if userErr != nil {
 		s.logger.Error(fmt.Sprintf("failed to get user by id: %s", userErr))
