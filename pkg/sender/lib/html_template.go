@@ -35,27 +35,17 @@ func newHtmlTemplate(params htmlTemplateParams) IHtmlTemplate {
 }
 
 func (h *htmlTemplate) NewTeamInviteTemplate(data template_data.TeamInviteTemplateData) (string, error) {
-	filepath := fmt.Sprintf("%s/invite.html", h.templateDirectory)
-
-	t, err := template.New("invite.html").ParseFiles(filepath)
-
-	if err != nil {
-		return "", err
-	}
-
-	var tpl bytes.Buffer
-
-	if err := t.Execute(&tpl, data); err != nil {
-		return "", err
-	}
-
-	return tpl.String(), nil
+	return h.createTemplate("team_invite", data)
 }
 
 func (h *htmlTemplate) NewUserCreatedTemplate(data template_data.EmptyUserCreatedTemplateData) (string, error) {
-	filepath := fmt.Sprintf("%s/new_user_created.html", h.templateDirectory)
+	return h.createTemplate("new_user_created", data)
+}
 
-	t, err := template.New("new_user_created.html").ParseFiles(filepath)
+func (h *htmlTemplate) createTemplate(templateName string, data interface{}) (string, error) {
+	filepath := fmt.Sprintf("%s/%s.html", h.templateDirectory, templateName)
+
+	t, err := template.New(fmt.Sprintf("%s.html", templateName)).ParseFiles(filepath)
 
 	if err != nil {
 		return "", err
