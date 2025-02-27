@@ -11,7 +11,7 @@ import (
 
 type IHtmlTemplate interface {
 	NewTeamInviteTemplate(data template_data.TeamInviteTemplateData) (string, error)
-	NewUserRegisterTemplate(data template_data.UserRegisterTemplateData) (string, error)
+	NewUserCreatedTemplate(data template_data.EmptyUserCreatedTemplateData) (string, error)
 }
 
 type htmlTemplateParams struct {
@@ -52,10 +52,10 @@ func (h *htmlTemplate) NewTeamInviteTemplate(data template_data.TeamInviteTempla
 	return tpl.String(), nil
 }
 
-func (h *htmlTemplate) NewUserRegisterTemplate(data template_data.UserRegisterTemplateData) (string, error) {
-	filepath := fmt.Sprintf("%s/user_registered.html", h.templateDirectory)
+func (h *htmlTemplate) NewUserCreatedTemplate(data template_data.EmptyUserCreatedTemplateData) (string, error) {
+	filepath := fmt.Sprintf("%s/new_user_created.html", h.templateDirectory)
 
-	t, err := template.New("user_registered.html").ParseFiles(filepath)
+	t, err := template.New("new_user_created.html").ParseFiles(filepath)
 
 	if err != nil {
 		return "", err

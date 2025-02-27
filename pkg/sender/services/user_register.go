@@ -10,7 +10,7 @@ import (
 )
 
 type IUserRegisterService interface {
-	SendRegisterUser(ctx context.Context, email string, password string) error
+	SendEmptyUserCreated(ctx context.Context, email string, password string) error
 }
 
 type userRegisterServiceParams struct {
@@ -36,13 +36,13 @@ func newUserRegisterService(params userRegisterServiceParams) IUserRegisterServi
 	}
 }
 
-func (s *userRegisterService) SendRegisterUser(ctx context.Context, email string, password string) error {
-	data := template_data.UserRegisterTemplateData{
+func (s *userRegisterService) SendEmptyUserCreated(_ context.Context, email string, password string) error {
+	data := template_data.EmptyUserCreatedTemplateData{
 		Email:    email,
 		Password: password,
 	}
 
-	template, err := s.htmlTemplate.NewUserRegisterTemplate(data)
+	template, err := s.htmlTemplate.NewUserCreatedTemplate(data)
 
 	if err != nil {
 		return fmt.Errorf("failed to create user register template: %v", err)

@@ -1,6 +1,6 @@
 package template_data
 
-type UserRegisterTemplateData struct {
+type EmptyUserCreatedTemplateData struct {
 	Email    string
 	Password string
 }

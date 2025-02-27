@@ -4,11 +4,9 @@ import (
 	"compass-backend/pkg/api/lib"
 	"compass-backend/pkg/common/constants"
 	fx_utils "compass-backend/pkg/common/fx"
-	common_infrastructure "compass-backend/pkg/common/infrastructure"
+	common_lib "compass-backend/pkg/common/pub_sub"
 	common_types "compass-backend/pkg/common/types"
 	"context"
-	"encoding/json"
-	"github.com/redis/go-redis/v9"
 	"go.uber.org/fx"
 )
 
@@ -21,13 +19,13 @@ type IEmailSenderService interface {
 type emailSenderServiceParams struct {
 	fx.In
 
-	Env   lib.IEnv
-	Redis common_infrastructure.IRedis
+	Env            lib.IEnv
+	RedisPublisher common_lib.IRedisPublisher
 }
 
 type emailSenderService struct {
-	channel string
-	redis   *redis.Client
+	channel        string
+	redisPublisher common_lib.IRedisPublisher
 }
 
 func FxEmailSenderService() fx.Option {
@@ -36,8 +34,8 @@ func FxEmailSenderService() fx.Option {
 
 func newEmailSenderService(params emailSenderServiceParams) IEmailSenderService {
 	return &emailSenderService{
-		channel: params.Env.GetEmailRedisChannel(),
-		redis:   params.Redis.GetInstance(),
+		channel:        params.Env.GetEmailRedisChannel(),
+		redisPublisher: params.RedisPublisher,
 	}
 }
 
@@ -47,7 +45,7 @@ func (s *emailSenderService) SendTeamInvite(ctx context.Context, data common_typ
 		Data: data,
 	}
 
-	return s.publish(ctx, s.channel, job)
+	return s.redisPublisher.Publish(ctx, s.channel, job)
 }
 
 func (s *emailSenderService) SendEmptyUserCreated(ctx context.Context, data common_types.SendEmptyUserCreatedEmailJobData) error {
@@ -56,7 +54,7 @@ func (s *emailSenderService) SendEmptyUserCreated(ctx context.Context, data comm
 		Data: data,
 	}
 
-	return s.publish(ctx, s.channel, job)
+	return s.redisPublisher.Publish(ctx, s.channel, job)
 }
 
 func (s *emailSenderService) SendUserRegistered(ctx context.Context, data common_types.SendUserRegisteredEmailJobData) error {
@@ -65,21 +63,5 @@ func (s *emailSenderService) SendUserRegistered(ctx context.Context, data common
 		Data: data,
 	}
 
-	return s.publish(ctx, s.channel, job)
-}
-
-func (s *emailSenderService) publish(ctx context.Context, channel string, job common_types.EmailJob) error {
-	payload, err := json.Marshal(job)
-
-	if err != nil {
-		return err
-	}
-
-	err = s.redis.Publish(ctx, channel, payload).Err()
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return s.redisPublisher.Publish(ctx, s.channel, job)
 }

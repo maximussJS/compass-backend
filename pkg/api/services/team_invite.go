@@ -8,7 +8,6 @@ import (
 	common_lib "compass-backend/pkg/common/lib"
 	"compass-backend/pkg/common/models"
 	common_repositories "compass-backend/pkg/common/repositories"
-	common_services "compass-backend/pkg/common/services"
 	common_types "compass-backend/pkg/common/types"
 	"context"
 	"fmt"
@@ -29,7 +28,7 @@ type teamInviteServiceParams struct {
 	Jwt                  lib.IJwt
 	Claims               lib.IClaims
 	Logger               common_lib.ILogger
-	EmailSender          common_services.IEmailSenderService
+	EmailSender          IEmailSenderService
 	UserService          IUserService
 	TeamInviteRepository common_repositories.ITeamInviteRepository
 	TeamRepository       common_repositories.ITeamRepository
@@ -40,7 +39,7 @@ type teamInviteService struct {
 	jwt                  lib.IJwt
 	claims               lib.IClaims
 	logger               common_lib.ILogger
-	emailSender          common_services.IEmailSenderService
+	emailSender          IEmailSenderService
 	userService          IUserService
 	teamInviteRepository common_repositories.ITeamInviteRepository
 	teamRepository       common_repositories.ITeamRepository

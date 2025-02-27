@@ -27,7 +27,7 @@ type authorizationServiceParams struct {
 	Logger      common_lib.ILogger
 	Jwt         lib.IJwt
 	Claims      lib.IClaims
-	userService IUserService
+	UserService IUserService
 }
 
 type authorizationService struct {
@@ -46,7 +46,7 @@ func newAuthorizationService(params authorizationServiceParams) *authorizationSe
 		logger:      params.Logger,
 		jwt:         params.Jwt,
 		claims:      params.Claims,
-		userService: params.userService,
+		userService: params.UserService,
 	}
 }
 

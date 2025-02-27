@@ -17,8 +17,7 @@ type IEnv interface {
 	GetMailHost() string
 	GetMailPort() int
 	GetHtmlTemplateDirectory() string
-	GetTeamInviteRedisChannel() string
-	GetUserRegisteredChannel() string
+	GetEmailRedisChannel() string
 }
 
 type envParams struct {
@@ -29,13 +28,12 @@ type envParams struct {
 
 type env struct {
 	common_lib.IEnv
-	MailUsername           string `mapstructure:"MAIL_USERNAME" validate:"required"`
-	MailPassword           string `mapstructure:"MAIL_PASSWORD" validate:"required"`
-	MailHost               string `mapstructure:"MAIL_HOST" validate:"required"`
-	MailPort               int    `mapstructure:"MAIL_PORT" validate:"required"`
-	HtmlTemplateDirectory  string `mapstructure:"HTML_TEMPLATE_DIRECTORY"`
-	TeamInviteRedisChannel string `mapstructure:"TEAM_INVITE_REDIS_CHANNEL"`
-	UserRegisteredChannel  string `mapstructure:"USER_REGISTERED_REDIS_CHANNEL"`
+	MailUsername          string `mapstructure:"MAIL_USERNAME" validate:"required"`
+	MailPassword          string `mapstructure:"MAIL_PASSWORD" validate:"required"`
+	MailHost              string `mapstructure:"MAIL_HOST" validate:"required"`
+	MailPort              int    `mapstructure:"MAIL_PORT" validate:"required"`
+	EmailRedisChannel     string `mapstructure:"EMAIL_REDIS_CHANNEL"`
+	HtmlTemplateDirectory string `mapstructure:"HTML_TEMPLATE_DIRECTORY"`
 }
 
 func FxEnv() fx.Option {
@@ -55,10 +53,9 @@ func newEnv(params envParams) *env {
 	viper.SetDefault("TIMEZONE", "UTC")
 
 	env := &env{
-		IEnv:                   params.IEnv,
-		HtmlTemplateDirectory:  "pkg/sender/templates",
-		TeamInviteRedisChannel: "team_invite",
-		UserRegisteredChannel:  "user_registered",
+		IEnv:                  params.IEnv,
+		HtmlTemplateDirectory: "pkg/sender/templates",
+		EmailRedisChannel:     "email-channel",
 	}
 
 	err = viper.Unmarshal(env)
@@ -94,10 +91,6 @@ func (e *env) GetHtmlTemplateDirectory() string {
 	return e.HtmlTemplateDirectory
 }
 
-func (e *env) GetTeamInviteRedisChannel() string {
-	return e.TeamInviteRedisChannel
-}
-
-func (e *env) GetUserRegisteredChannel() string {
-	return e.UserRegisteredChannel
+func (e *env) GetEmailRedisChannel() string {
+	return e.EmailRedisChannel
 }

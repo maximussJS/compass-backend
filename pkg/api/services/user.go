@@ -10,7 +10,6 @@ import (
 	common_lib "compass-backend/pkg/common/lib"
 	"compass-backend/pkg/common/models"
 	common_repositories "compass-backend/pkg/common/repositories"
-	common_services "compass-backend/pkg/common/services"
 	common_types "compass-backend/pkg/common/types"
 	"context"
 	"fmt"
@@ -31,14 +30,14 @@ type userServiceParams struct {
 	fx.In
 
 	Logger               common_lib.ILogger
-	EmailSender          common_services.IEmailSenderService
+	EmailSender          IEmailSenderService
 	UserRepository       common_repositories.IUserRepository
 	TeamMemberRepository common_repositories.ITeamMemberRepository
 }
 
 type userService struct {
 	logger               common_lib.ILogger
-	emailSender          common_services.IEmailSenderService
+	emailSender          IEmailSenderService
 	userRepository       common_repositories.IUserRepository
 	teamMemberRepository common_repositories.ITeamMemberRepository
 }
@@ -178,9 +177,6 @@ func (s *userService) CreateEmptyUserByEmail(ctx context.Context, email string) 
 		s.logger.Error(fmt.Sprintf("failed to hash password: %s", hashErr))
 		return nil, hashErr
 	}
-
-	fmt.Printf("User password: %s\n", userPassword)
-	fmt.Printf("Hashed password: %s\n", hashedPassword)
 
 	id, createErr := s.userRepository.Create(ctx, models.User{
 		Name:       "Unnamed User",

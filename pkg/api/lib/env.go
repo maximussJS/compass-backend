@@ -19,6 +19,7 @@ type IEnv interface {
 	GetJwtSecret() []byte
 	GetAuthExpirationDuration() time.Duration
 	GetInviteExpirationDuration() time.Duration
+	GetEmailRedisChannel() string
 }
 
 type envParams struct {
@@ -34,6 +35,8 @@ type env struct {
 
 	AuthExpirationDurationInMinutes   int `mapstructure:"AUTH_EXPIRATION_DURATION_IN_MINUTES"`
 	InviteExpirationDurationInMinutes int `mapstructure:"INVITE_EXPIRATION_DURATION_IN_MINUTES"`
+
+	EmailRedisChannel string `mapstructure:"EMAIL_REDIS_CHANNEL"`
 
 	DefaultLimit int `mapstructure:"DEFAULT_LIMIT"`
 	MaxLimit     int `mapstructure:"MAX_LIMIT"`
@@ -61,6 +64,7 @@ func newEnv(params envParams) *env {
 		MaxLimit:                          100,
 		AuthExpirationDurationInMinutes:   1440, // 24 hours
 		InviteExpirationDurationInMinutes: 1,
+		EmailRedisChannel:                 "email-channel",
 	}
 
 	err = viper.Unmarshal(env)
@@ -98,4 +102,8 @@ func (e *env) GetInviteExpirationDuration() time.Duration {
 
 func (e *env) GetAppUrl() string {
 	return e.AppUrl
+}
+
+func (e *env) GetEmailRedisChannel() string {
+	return e.EmailRedisChannel
 }
