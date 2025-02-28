@@ -18,6 +18,8 @@ type SendEmptyUserCreatedEmailJobData struct {
 	Password string `json:"password"`
 }
 
-type SendUserRegisteredEmailJobData struct {
-	Name string `json:"name"`
+type SendConfirmEmailJobData struct {
+	Email            string `json:"email"`
+	Name             string `json:"name"`
+	ConfirmationLink string `json:"confirmationLink"`
 }

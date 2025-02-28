@@ -14,7 +14,7 @@ import (
 
 type IAuthorizationMiddleware interface {
 	Handle() gin.HandlerFunc
-	SetTokenService(tokenService common_interfaces.ITokenService)
+	SetTokenService(tokenService common_interfaces.IAuthService)
 }
 
 type authorizationMiddlewareParams struct {
@@ -22,7 +22,7 @@ type authorizationMiddlewareParams struct {
 }
 
 type authorizationMiddleware struct {
-	tokenService common_interfaces.ITokenService
+	tokenService common_interfaces.IAuthService
 }
 
 func FxAuthorizationMiddleware() fx.Option {
@@ -76,6 +76,6 @@ func (m *authorizationMiddleware) getTokenFromRequest(c *gin.Context) (string, e
 	return tokenParts[1], nil
 }
 
-func (m *authorizationMiddleware) SetTokenService(tokenService common_interfaces.ITokenService) {
+func (m *authorizationMiddleware) SetTokenService(tokenService common_interfaces.IAuthService) {
 	m.tokenService = tokenService
 }

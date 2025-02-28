@@ -9,6 +9,7 @@ var Module = fx.Options(
 	pub_sub.FxRedisPublisher(),
 	FxEmailSenderService(),
 	FxUserService(),
+	FxTokenService(),
 	FxAuthorizationService(),
 	FxCategoryService(),
 	FxTeamInviteService(),

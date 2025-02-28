@@ -25,7 +25,7 @@ type emailConsumerServiceParams struct {
 	Logger            common_lib.ILogger
 	Env               lib.IEnv
 	TeamInviteService ITeamInviteService
-	UserRegister      IUserRegisterService
+	UserService       IUserService
 	RedisConsumer     pub_sub.IRedisConsumer
 }
 
@@ -34,7 +34,7 @@ type emailConsumerService struct {
 	logger            common_lib.ILogger
 	redisConsumer     pub_sub.IRedisConsumer
 	teamInviteService ITeamInviteService
-	userRegister      IUserRegisterService
+	userService       IUserService
 }
 
 func FxEmailConsumerService() fx.Option {
@@ -47,7 +47,7 @@ func newEmailConsumerService(lc fx.Lifecycle, params emailConsumerServiceParams)
 		channel:           params.Env.GetEmailRedisChannel(),
 		redisConsumer:     params.RedisConsumer,
 		teamInviteService: params.TeamInviteService,
-		userRegister:      params.UserRegister,
+		userService:       params.UserService,
 	}
 
 	lc.Append(fx.Hook{
@@ -109,7 +109,25 @@ func (s *emailConsumerService) consumerFn() pub_sub.RedisConsumerFn {
 					return err
 				}
 
-				if err := s.userRegister.SendEmptyUserCreated(ctx, data.Email, data.Password); err != nil {
+				if err := s.userService.SendEmptyUserCreated(ctx, data.Email, data.Password); err != nil {
+					s.logger.Error(fmt.Sprintf("error sending empty user created email: %v", err))
+					return err
+				}
+
+				s.logger.Info(fmt.Sprintf("empty user created email sent to: %v", data.Email))
+
+				return nil
+			}
+		case constants.SendConfirmEmailJobType:
+			{
+				var data common_types.SendConfirmEmailJobData
+
+				if err := json.Unmarshal(dataBytes, &data); err != nil {
+					s.logger.Error(fmt.Sprintf("error unmarshalling empty user created message: %v", err))
+					return err
+				}
+
+				if err := s.userService.SendConfirmEmail(ctx, data.Email, data.Name, data.ConfirmationLink); err != nil {
 					s.logger.Error(fmt.Sprintf("error sending empty user created email: %v", err))
 					return err
 				}

@@ -12,6 +12,7 @@ import (
 type IClaims interface {
 	NewAuthClaims(userId string, role constants.UserRole) common_types.AuthClaims
 	NewInviteClaims(email, trainerId string) common_types.InviteClaims
+	NewConfirmEmailClaims(email string) common_types.ConfirmEmailClaims
 }
 
 type claimsParams struct {
@@ -30,7 +31,7 @@ func FxClaims() fx.Option {
 	return fx_utils.AsProvider(newClaims, new(IClaims))
 }
 
-func newClaims(params claimsParams) *claims {
+func newClaims(params claimsParams) IClaims {
 	return &claims{
 		issuer:                   params.Env.GetAppName(),
 		authExpirationDuration:   params.Env.GetAuthExpirationDuration(),
@@ -57,6 +58,18 @@ func (c *claims) NewInviteClaims(email, teamId string) common_types.InviteClaims
 		TeamId: teamId,
 		RegisteredClaims: &go_jwt.RegisteredClaims{
 			Subject:   email,
+			Issuer:    c.issuer,
+			ExpiresAt: go_jwt.NewNumericDate(time.Now().Add(c.inviteExpirationDuration)),
+			IssuedAt:  go_jwt.NewNumericDate(time.Now()),
+		},
+	}
+}
+
+func (c *claims) NewConfirmEmailClaims(userId string) common_types.ConfirmEmailClaims {
+	return common_types.ConfirmEmailClaims{
+		UserId: userId,
+		RegisteredClaims: &go_jwt.RegisteredClaims{
+			Subject:   userId,
 			Issuer:    c.issuer,
 			ExpiresAt: go_jwt.NewNumericDate(time.Now().Add(c.inviteExpirationDuration)),
 			IssuedAt:  go_jwt.NewNumericDate(time.Now()),

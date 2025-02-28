@@ -12,6 +12,7 @@ import (
 type IHtmlTemplate interface {
 	NewTeamInviteTemplate(data template_data.TeamInviteTemplateData) (string, error)
 	NewUserCreatedTemplate(data template_data.EmptyUserCreatedTemplateData) (string, error)
+	NewConfirmEmailTemplate(data template_data.ConfirmEmailTemplateData) (string, error)
 }
 
 type htmlTemplateParams struct {
@@ -40,6 +41,10 @@ func (h *htmlTemplate) NewTeamInviteTemplate(data template_data.TeamInviteTempla
 
 func (h *htmlTemplate) NewUserCreatedTemplate(data template_data.EmptyUserCreatedTemplateData) (string, error) {
 	return h.createTemplate("new_user_created", data)
+}
+
+func (h *htmlTemplate) NewConfirmEmailTemplate(data template_data.ConfirmEmailTemplateData) (string, error) {
+	return h.createTemplate("confirm_email", data)
 }
 
 func (h *htmlTemplate) createTemplate(templateName string, data interface{}) (string, error) {

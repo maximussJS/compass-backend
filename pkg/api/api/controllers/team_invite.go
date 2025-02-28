@@ -90,7 +90,7 @@ func (h *teamInviteController) AcceptInvite(c *gin.Context) {
 		return
 	}
 
-	responses.SuccessEmpty(c)
+	responses.SuccessMessage(c, "Invitation has been accepted")
 }
 
 func (h *teamInviteController) CancelInvite(c *gin.Context) {
@@ -110,5 +110,5 @@ func (h *teamInviteController) CancelInvite(c *gin.Context) {
 		return
 	}
 
-	responses.SuccessEmpty(c)
+	responses.SuccessMessage(c, "Invitation has been canceled")
 }

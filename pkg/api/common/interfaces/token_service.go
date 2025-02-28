@@ -5,6 +5,6 @@ import (
 	"context"
 )
 
-type ITokenService interface {
+type IAuthService interface {
 	GetUserByToken(ctx context.Context, token string) (*models.User, error)
 }

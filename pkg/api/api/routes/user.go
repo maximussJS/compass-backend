@@ -42,19 +42,21 @@ func newUserRoute(params userRouteParams) common_routes.IRoute {
 func (h *userRoute) Setup() {
 	group := h.router.GetRouter().Group("/api/users")
 
-	group.Use(h.authorizationMiddleware.Handle())
-
 	h.logger.Info(fmt.Sprintf("Mapped User Route %s", group.BasePath()))
 
-	group.GET("/me", h.userController.Me)
+	group.GET("/confirm-email/:token", h.userController.ConfirmEmail)
+
+	h.logger.Info(fmt.Sprintf("Mapped GET %s/confirm-email/:token", group.BasePath()))
+
+	group.GET("/me", h.authorizationMiddleware.Handle(), h.userController.Me)
 
 	h.logger.Info(fmt.Sprintf("Mapped GET %s/me", group.BasePath()))
 
-	group.PATCH("/change-name", h.userController.ChangeName)
+	group.PATCH("/change-name", h.authorizationMiddleware.Handle(), h.userController.ChangeName)
 
 	h.logger.Info(fmt.Sprintf("Mapped POST %s/change-name", group.BasePath()))
 
-	group.PATCH("/change-password", h.userController.ChangePassword)
+	group.PATCH("/change-password", h.authorizationMiddleware.Handle(), h.userController.ChangePassword)
 
 	h.logger.Info(fmt.Sprintf("Mapped POST %s/change-password", group.BasePath()))
 }

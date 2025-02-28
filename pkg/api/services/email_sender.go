@@ -13,7 +13,7 @@ import (
 type IEmailSenderService interface {
 	SendTeamInvite(ctx context.Context, data common_types.SendTeamInviteEmailJobData) error
 	SendEmptyUserCreated(ctx context.Context, data common_types.SendEmptyUserCreatedEmailJobData) error
-	SendUserRegistered(ctx context.Context, data common_types.SendUserRegisteredEmailJobData) error
+	SendUserRegistered(ctx context.Context, data common_types.SendConfirmEmailJobData) error
 }
 
 type emailSenderServiceParams struct {
@@ -57,9 +57,9 @@ func (s *emailSenderService) SendEmptyUserCreated(ctx context.Context, data comm
 	return s.redisPublisher.Publish(ctx, s.channel, job)
 }
 
-func (s *emailSenderService) SendUserRegistered(ctx context.Context, data common_types.SendUserRegisteredEmailJobData) error {
+func (s *emailSenderService) SendUserRegistered(ctx context.Context, data common_types.SendConfirmEmailJobData) error {
 	job := common_types.EmailJob{
-		Type: constants.SendUserRegisteredEmailJobType,
+		Type: constants.SendConfirmEmailJobType,
 		Data: data,
 	}
 

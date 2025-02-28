@@ -12,4 +12,5 @@ var Module = fx.Options(
 	FxTrainerMiddleware(),
 	FxTeamMiddleware(),
 	FxTeamOwnerMiddleware(),
+	FxUserVerifiedMiddleware(),
 )

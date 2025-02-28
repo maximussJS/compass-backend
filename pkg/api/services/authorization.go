@@ -4,8 +4,6 @@ import (
 	"compass-backend/pkg/api/api_errors"
 	authorization_dto "compass-backend/pkg/api/common/dto/authorization"
 	common_interfaces "compass-backend/pkg/api/common/interfaces"
-	common_types "compass-backend/pkg/api/common/types/claims"
-	"compass-backend/pkg/api/lib"
 	crypto_utils "compass-backend/pkg/api/utils/crypto"
 	fx_utils "compass-backend/pkg/common/fx"
 	common_lib "compass-backend/pkg/common/lib"
@@ -16,7 +14,7 @@ import (
 )
 
 type IAuthorizationService interface {
-	common_interfaces.ITokenService
+	common_interfaces.IAuthService
 	SignInByPassword(ctx context.Context, dto authorization_dto.SignInByPasswordRequest) (string, error)
 	SignUpByPassword(ctx context.Context, dto authorization_dto.SignUpByPasswordRequest) (*common_models.User, error)
 }
@@ -24,17 +22,15 @@ type IAuthorizationService interface {
 type authorizationServiceParams struct {
 	fx.In
 
-	Logger      common_lib.ILogger
-	Jwt         lib.IJwt
-	Claims      lib.IClaims
-	UserService IUserService
+	Logger       common_lib.ILogger
+	TokenService ITokenService
+	UserService  IUserService
 }
 
 type authorizationService struct {
-	logger      common_lib.ILogger
-	jwt         lib.IJwt
-	claims      lib.IClaims
-	userService IUserService
+	logger       common_lib.ILogger
+	tokenService ITokenService
+	userService  IUserService
 }
 
 func FxAuthorizationService() fx.Option {
@@ -43,10 +39,9 @@ func FxAuthorizationService() fx.Option {
 
 func newAuthorizationService(params authorizationServiceParams) *authorizationService {
 	return &authorizationService{
-		logger:      params.Logger,
-		jwt:         params.Jwt,
-		claims:      params.Claims,
-		userService: params.UserService,
+		logger:       params.Logger,
+		tokenService: params.TokenService,
+		userService:  params.UserService,
 	}
 }
 
@@ -68,16 +63,7 @@ func (s *authorizationService) SignInByPassword(ctx context.Context, dto authori
 		return "", api_errors.ErrorInvalidCredentials
 	}
 
-	authClaims := s.claims.NewAuthClaims(user.Id, user.Role)
-
-	token, tokenErr := s.jwt.Generate(authClaims)
-
-	if tokenErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to generate auth token: %s", tokenErr))
-		return "", tokenErr
-	}
-
-	return token, nil
+	return s.tokenService.GenerateAuthorizationToken(user)
 }
 
 func (s *authorizationService) SignUpByPassword(ctx context.Context, dto authorization_dto.SignUpByPasswordRequest) (*common_models.User, error) {
@@ -103,12 +89,10 @@ func (s *authorizationService) SignUpByPassword(ctx context.Context, dto authori
 }
 
 func (s *authorizationService) GetUserByToken(ctx context.Context, token string) (*common_models.User, error) {
-	var authClaims common_types.AuthClaims
+	authClaims, authClaimsErr := s.tokenService.VerifyAuthorizationToken(token)
 
-	err := s.jwt.Verify(token, &authClaims)
-
-	if err != nil || authClaims.UserId == "" {
-		return nil, api_errors.ErrorInvalidToken
+	if authClaimsErr != nil {
+		return nil, authClaimsErr
 	}
 
 	user, userErr := s.userService.GetById(ctx, authClaims.UserId)
@@ -119,7 +103,7 @@ func (s *authorizationService) GetUserByToken(ctx context.Context, token string)
 	}
 
 	if user == nil {
-		s.logger.Warn(fmt.Sprintf("user not found by id %d, but the token is valid %s", authClaims.UserId, token))
+		s.logger.Warn(fmt.Sprintf("user not found by id %s, but the token is valid %s", authClaims.UserId, token))
 		return nil, api_errors.ErrorInvalidToken
 	}
 

@@ -9,7 +9,7 @@ var Module = fx.Options(
 	pub_sub.FxRedisConsumer(),
 	FxMailService(),
 	FxTeamInviteService(),
-	FxUserRegisterService(),
+	FxUserService(),
 	FxEmailConsumerService(),
 	fx.Invoke(func(service IEmailConsumerService) {}),
 )

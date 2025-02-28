@@ -2,7 +2,6 @@ package services
 
 import (
 	"compass-backend/pkg/api/api_errors"
-	claims_types "compass-backend/pkg/api/common/types/claims"
 	"compass-backend/pkg/api/lib"
 	fx_utils "compass-backend/pkg/common/fx"
 	common_lib "compass-backend/pkg/common/lib"
@@ -25,9 +24,8 @@ type teamInviteServiceParams struct {
 	fx.In
 
 	Env                  lib.IEnv
-	Jwt                  lib.IJwt
-	Claims               lib.IClaims
 	Logger               common_lib.ILogger
+	TokenService         ITokenService
 	EmailSender          IEmailSenderService
 	UserService          IUserService
 	TeamInviteRepository common_repositories.ITeamInviteRepository
@@ -36,9 +34,8 @@ type teamInviteServiceParams struct {
 
 type teamInviteService struct {
 	appUrl               string
-	jwt                  lib.IJwt
-	claims               lib.IClaims
 	logger               common_lib.ILogger
+	tokenService         ITokenService
 	emailSender          IEmailSenderService
 	userService          IUserService
 	teamInviteRepository common_repositories.ITeamInviteRepository
@@ -52,8 +49,7 @@ func FxTeamInviteService() fx.Option {
 func newTeamInviteService(params teamInviteServiceParams) ITeamInviteService {
 	return &teamInviteService{
 		appUrl:               params.Env.GetAppUrl(),
-		jwt:                  params.Jwt,
-		claims:               params.Claims,
+		tokenService:         params.TokenService,
 		logger:               params.Logger,
 		userService:          params.UserService,
 		emailSender:          params.EmailSender,
@@ -89,20 +85,18 @@ func (s *teamInviteService) InviteByEmail(ctx context.Context, email, ownerId st
 		return nil
 	}
 
-	claims := s.claims.NewInviteClaims(email, team.Id)
+	token, expiresAt, tokenErr := s.tokenService.GenerateTeamInviteToken(team.Id, email)
 
-	token, err := s.jwt.Generate(claims)
-
-	if err != nil {
-		s.logger.Error(fmt.Sprintf("failed to generate invite token: %s", err))
-		return err
+	if tokenErr != nil {
+		s.logger.Error(fmt.Sprintf("failed to generate team invite token: %s", tokenErr))
+		return tokenErr
 	}
 
 	inviteId, inviteErr := s.teamInviteRepository.Create(ctx, models.TeamInvite{
 		Email:     email,
 		TeamId:    team.Id,
 		Token:     token,
-		ExpiresAt: time.Unix(claims.ExpiresAt.Unix(), 0),
+		ExpiresAt: time.Unix(expiresAt, 0),
 	})
 
 	if inviteErr != nil {
@@ -165,12 +159,10 @@ func (s *teamInviteService) changeUserTeam(ctx context.Context, invite *models.T
 }
 
 func (s *teamInviteService) verifyTeamInviteByToken(ctx context.Context, token string) (*models.TeamInvite, error) {
-	var inviteClaims claims_types.InviteClaims
+	inviteClaims, inviteClaimsErr := s.tokenService.VerifyTeamInviteToken(token)
 
-	err := s.jwt.Verify(token, &inviteClaims)
-
-	if err != nil {
-		return nil, api_errors.ErrorInvalidToken
+	if inviteClaimsErr != nil {
+		return nil, inviteClaimsErr
 	}
 
 	if inviteClaims.IsExpired() {

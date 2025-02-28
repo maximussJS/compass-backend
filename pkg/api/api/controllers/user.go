@@ -16,6 +16,7 @@ import (
 type IUserController interface {
 	ChangeName(c *gin.Context)
 	ChangePassword(c *gin.Context)
+	ConfirmEmail(c *gin.Context)
 	Me(c *gin.Context)
 }
 
@@ -111,4 +112,35 @@ func (h *userController) Me(c *gin.Context) {
 	}
 
 	responses.SuccessJson(c, user)
+}
+
+func (h *userController) ConfirmEmail(c *gin.Context) {
+	token, ok := gin_utils.GetTokenParam(c)
+	if !ok {
+		return
+	}
+
+	err := h.userService.ConfirmEmail(c, token)
+
+	if err != nil {
+		if errors.Is(err, api_errors.ErrorEmailAlreadyConfirmed) {
+			responses.BadRequest(c, "Email already confirmed")
+			return
+		}
+
+		if errors.Is(err, api_errors.ErrorInvalidToken) {
+			responses.BadRequest(c, "Invalid token")
+			return
+		}
+
+		if errors.Is(err, api_errors.ErrorUserNotFound) {
+			responses.NotFound(c, "User not found")
+			return
+		}
+
+		responses.InternalServerError(c)
+		return
+	}
+
+	responses.SuccessMessage(c, "Email confirmed")
 }

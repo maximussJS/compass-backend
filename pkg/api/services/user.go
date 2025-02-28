@@ -3,6 +3,7 @@ package services
 import (
 	"compass-backend/pkg/api/api_errors"
 	user_dto "compass-backend/pkg/api/common/dto/user"
+	"compass-backend/pkg/api/lib"
 	crypto_utils "compass-backend/pkg/api/utils/crypto"
 	"compass-backend/pkg/api/utils/password"
 	"compass-backend/pkg/common/constants"
@@ -24,19 +25,24 @@ type IUserService interface {
 	CreateUserByCredentials(ctx context.Context, email, name, password string) (*models.User, error)
 	CreateEmptyUserByEmail(ctx context.Context, email string) (*models.User, error)
 	ChangeUserTeam(ctx context.Context, teamId string, user *models.User) error
+	ConfirmEmail(ctx context.Context, token string) error
 }
 
 type userServiceParams struct {
 	fx.In
 
+	Env                  lib.IEnv
 	Logger               common_lib.ILogger
+	TokenService         ITokenService
 	EmailSender          IEmailSenderService
 	UserRepository       common_repositories.IUserRepository
 	TeamMemberRepository common_repositories.ITeamMemberRepository
 }
 
 type userService struct {
+	appUrl               string
 	logger               common_lib.ILogger
+	tokenService         ITokenService
 	emailSender          IEmailSenderService
 	userRepository       common_repositories.IUserRepository
 	teamMemberRepository common_repositories.ITeamMemberRepository
@@ -48,11 +54,51 @@ func FxUserService() fx.Option {
 
 func newUserService(params userServiceParams) IUserService {
 	return &userService{
+		appUrl:               params.Env.GetAppUrl(),
 		logger:               params.Logger,
+		tokenService:         params.TokenService,
 		emailSender:          params.EmailSender,
 		userRepository:       params.UserRepository,
 		teamMemberRepository: params.TeamMemberRepository,
 	}
+}
+
+func (s *userService) ConfirmEmail(ctx context.Context, token string) error {
+	claims, err := s.tokenService.VerifyConfirmEmailToken(token)
+
+	if err != nil {
+		return err
+	}
+
+	if claims.IsExpired() {
+		return api_errors.ErrorInvalidToken
+	}
+
+	user, err := s.userRepository.GetById(ctx, claims.UserId)
+
+	if err != nil {
+		s.logger.Error(fmt.Sprintf("failed to get user by id: %s", err))
+		return err
+	}
+
+	if user == nil {
+		return api_errors.ErrorUserNotFound
+	}
+
+	if user.IsVerified {
+		return api_errors.ErrorEmailAlreadyConfirmed
+	}
+
+	err = s.userRepository.UpdateById(ctx, user.Id, models.User{
+		IsVerified: true,
+	})
+
+	if err != nil {
+		s.logger.Error(fmt.Sprintf("failed to update user: %s", err))
+		return err
+	}
+
+	return nil
 }
 
 func (s *userService) ChangeName(ctx context.Context, user *models.User, request user_dto.ChangeNameRequest) error {
@@ -147,8 +193,17 @@ func (s *userService) CreateUserByCredentials(ctx context.Context, email, name, 
 		return nil, createErr
 	}
 
-	job := common_types.SendUserRegisteredEmailJobData{
-		Name: name,
+	confirmEmailToken, tokenErr := s.tokenService.GenerateConfirmEmailToken(id)
+
+	if tokenErr != nil {
+		s.logger.Error(fmt.Sprintf("failed to generate confirm email token: %s", tokenErr))
+		return nil, tokenErr
+	}
+
+	job := common_types.SendConfirmEmailJobData{
+		Name:             name,
+		Email:            email,
+		ConfirmationLink: fmt.Sprintf("%s/api/users/confirm-email/%s", s.appUrl, confirmEmailToken),
 	}
 
 	sendErr := s.emailSender.SendUserRegistered(ctx, job)
