@@ -13,4 +13,5 @@ var Module = fx.Options(
 	FxTeamMiddleware(),
 	FxTeamOwnerMiddleware(),
 	FxUserVerifiedMiddleware(),
+	FxUploadMiddleware(),
 )

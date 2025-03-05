@@ -14,4 +14,5 @@ var Module = fx.Options(
 	FxCategoryService(),
 	FxTeamInviteService(),
 	FxTeamService(),
+	FxExerciseService(),
 )

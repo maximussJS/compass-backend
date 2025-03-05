@@ -3,15 +3,15 @@ package infrastructure
 import (
 	"compass-backend/pkg/api/models"
 	common_infrastracture "compass-backend/pkg/common/infrastructure"
+	common_lib "compass-backend/pkg/common/lib"
 	common_models "compass-backend/pkg/common/models"
 	"context"
 	"fmt"
-
-	common_lib "compass-backend/pkg/common/lib"
 	"go.uber.org/fx"
 )
 
 var Module = fx.Options(
+	FxCloudinary(),
 	common_infrastracture.FxRouter(),
 	common_infrastracture.FxRedis(),
 	common_infrastracture.FxDatabase(),
@@ -36,6 +36,8 @@ var Module = fx.Options(
 					&common_models.TeamMember{},
 					&common_models.TeamInvite{},
 					&models.Category{},
+					&models.Exercise{},
+					&models.ExerciseMedia{},
 				)
 
 				logger.Info("Migrations completed")

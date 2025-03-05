@@ -14,8 +14,10 @@ import (
 type IEnv interface {
 	common_lib.IEnv
 	GetAppUrl() string
+	GetCloudinaryUrl() string
 	GetDefaultLimit() int
 	GetMaxLimit() int
+	GetMaxFileSize() int64
 	GetJwtSecret() []byte
 	GetAuthExpirationDuration() time.Duration
 	GetInviteExpirationDuration() time.Duration
@@ -30,11 +32,13 @@ type envParams struct {
 
 type env struct {
 	common_lib.IEnv
-	JwtSecret string `mapstructure:"JWT_SECRET" validate:"required"`
-	AppUrl    string `mapstructure:"APP_URL" validate:"required"`
+	JwtSecret     string `mapstructure:"JWT_SECRET" validate:"required"`
+	AppUrl        string `mapstructure:"APP_URL" validate:"required"`
+	CloudinaryUrl string `mapstructure:"CLOUDINARY_URL" validate:"required"`
 
-	AuthExpirationDurationInMinutes   int `mapstructure:"AUTH_EXPIRATION_DURATION_IN_MINUTES"`
-	InviteExpirationDurationInMinutes int `mapstructure:"INVITE_EXPIRATION_DURATION_IN_MINUTES"`
+	AuthExpirationDurationInMinutes   int   `mapstructure:"AUTH_EXPIRATION_DURATION_IN_MINUTES"`
+	InviteExpirationDurationInMinutes int   `mapstructure:"INVITE_EXPIRATION_DURATION_IN_MINUTES"`
+	MaxFileSize                       int64 `mapstructure:"MAX_FILE_SIZE"`
 
 	EmailRedisChannel string `mapstructure:"EMAIL_REDIS_CHANNEL"`
 
@@ -64,6 +68,7 @@ func newEnv(params envParams) *env {
 		MaxLimit:                          100,
 		AuthExpirationDurationInMinutes:   1440, // 24 hours
 		InviteExpirationDurationInMinutes: 1,
+		MaxFileSize:                       10 * 1024 * 1024, // 10MB
 		EmailRedisChannel:                 "email-channel",
 	}
 
@@ -102,6 +107,14 @@ func (e *env) GetInviteExpirationDuration() time.Duration {
 
 func (e *env) GetAppUrl() string {
 	return e.AppUrl
+}
+
+func (e *env) GetCloudinaryUrl() string {
+	return e.CloudinaryUrl
+}
+
+func (e *env) GetMaxFileSize() int64 {
+	return e.MaxFileSize
 }
 
 func (e *env) GetEmailRedisChannel() string {

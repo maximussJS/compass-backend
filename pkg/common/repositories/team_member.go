@@ -38,7 +38,7 @@ func newTeamMemberRepository(params teamMemberRepositoryParams) ITeamMemberRepos
 }
 
 func (r *teamMemberRepository) Get(ctx context.Context, teamId, userId string) (*models.TeamMember, error) {
-	teamMember := &models.TeamMember{}
+	var teamMember *models.TeamMember
 	err := r.db.WithContext(ctx).Where("team_id = ? AND user_id = ?", teamId, userId).First(teamMember).Error
 
 	if err != nil {

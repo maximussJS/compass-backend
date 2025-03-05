@@ -12,4 +12,5 @@ var Module = fx.Options(
 	FxTeamInviteController(),
 	FxTeamController(),
 	FxUserController(),
+	FxExerciseController(),
 )
