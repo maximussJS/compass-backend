@@ -1,15 +1,18 @@
 package models
 
 import (
+	common_models "compass-backend/pkg/common/models"
 	"gorm.io/gorm"
 	"time"
 )
 
 type Category struct {
-	Id        uint      `gorm:"primaryKey;autoIncrement" json:"id" `
-	Name      string    `gorm:"size:100;not null;unique" json:"name"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	Id        uint               `gorm:"primaryKey;autoIncrement" json:"id" `
+	Name      string             `gorm:"size:100;not null;unique" json:"name"`
+	UserId    string             `gorm:"primaryKey" json:"user_id"`
+	User      common_models.User `gorm:"foreignKey:UserId;references:Id" json:"user"`
+	CreatedAt time.Time          `json:"createdAt"`
+	UpdatedAt time.Time          `json:"updatedAt"`
 }
 
 func (c *Category) TableName() string {

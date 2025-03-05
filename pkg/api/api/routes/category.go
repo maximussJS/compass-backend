@@ -13,6 +13,7 @@ import (
 type categoryRoute struct {
 	logger                  common_lib.ILogger
 	authorizationMiddleware middlewares.IAuthorizationMiddleware
+	trainerMiddleware       middlewares.ITrainerMiddleware
 	router                  common_infrastracture.IRouter
 	categoryController      controllers.ICategoryController
 }
@@ -21,6 +22,7 @@ type categoryRouteParams struct {
 	fx.In
 
 	Logger                  common_lib.ILogger
+	TrainerMiddleware       middlewares.ITrainerMiddleware
 	AuthorizationMiddleware middlewares.IAuthorizationMiddleware
 	CategoryController      controllers.ICategoryController
 	Router                  common_infrastracture.IRouter
@@ -35,6 +37,7 @@ func newCategoryRoute(params categoryRouteParams) common_routes.IRoute {
 		logger:                  params.Logger,
 		router:                  params.Router,
 		authorizationMiddleware: params.AuthorizationMiddleware,
+		trainerMiddleware:       params.TrainerMiddleware,
 		categoryController:      params.CategoryController,
 	}
 }
@@ -43,6 +46,7 @@ func (h *categoryRoute) Setup() {
 	group := h.router.GetRouter().Group("api/categories")
 
 	group.Use(h.authorizationMiddleware.Handle())
+	group.Use(h.trainerMiddleware.Handle())
 
 	h.logger.Info(fmt.Sprintf("Mapped Category Route %s", group.BasePath()))
 
