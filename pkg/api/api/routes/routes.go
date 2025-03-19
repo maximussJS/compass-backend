@@ -7,7 +7,6 @@ import (
 
 var Module = fx.Options(
 	common_routes.FxHealthCheckRoute(),
-	FxCategoryRoute(),
 	FxAuthorizationRoute(),
 	FxTeamInviteRoute(),
 	FxTeamRoute(),

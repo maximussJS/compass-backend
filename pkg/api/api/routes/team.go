@@ -15,7 +15,6 @@ type teamRoute struct {
 	router                  common_infrastracture.IRouter
 	teamController          controllers.ITeamController
 	authorizationMiddleware middlewares.IAuthorizationMiddleware
-	trainerMiddleware       middlewares.ITrainerMiddleware
 	teamMiddleware          middlewares.ITeamMiddleware
 	teamOwnerMiddleware     middlewares.ITeamOwnerMiddleware
 }
@@ -27,7 +26,6 @@ type teamRouteParams struct {
 	Router                  common_infrastracture.IRouter
 	TeamController          controllers.ITeamController
 	AuthorizationMiddleware middlewares.IAuthorizationMiddleware
-	TrainerMiddleware       middlewares.ITrainerMiddleware
 	TeamMiddleware          middlewares.ITeamMiddleware
 	TeamOwnerMiddleware     middlewares.ITeamOwnerMiddleware
 }
@@ -42,7 +40,6 @@ func newTeamRoute(params teamRouteParams) common_routes.IRoute {
 		router:                  params.Router,
 		teamController:          params.TeamController,
 		authorizationMiddleware: params.AuthorizationMiddleware,
-		trainerMiddleware:       params.TrainerMiddleware,
 		teamMiddleware:          params.TeamMiddleware,
 		teamOwnerMiddleware:     params.TeamOwnerMiddleware,
 	}
@@ -52,7 +49,6 @@ func (h *teamRoute) Setup() {
 	group := h.router.GetRouter().Group("/api/teams")
 
 	group.Use(h.authorizationMiddleware.Handle())
-	group.Use(h.trainerMiddleware.Handle())
 
 	h.logger.Info(fmt.Sprintf("Mapped Team Route %s", group.BasePath()))
 

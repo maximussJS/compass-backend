@@ -8,10 +8,7 @@ import (
 var Module = fx.Options(
 	middlewares.FxTimeoutMiddleware(),
 	FxAuthorizationMiddleware(),
-	FxClientMiddleware(),
-	FxTrainerMiddleware(),
 	FxTeamMiddleware(),
 	FxTeamOwnerMiddleware(),
 	FxUserVerifiedMiddleware(),
-	FxUploadMiddleware(),
 )

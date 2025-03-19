@@ -62,7 +62,7 @@ func (s *teamInviteService) InviteByEmail(ctx context.Context, email, ownerId st
 	team, teamErr := s.teamRepository.GetByOwnerId(ctx, ownerId)
 
 	if teamErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to get team by owner id: %s", teamErr))
+		s.logger.Errorf("failed to get team by owner id: %s", teamErr)
 		return teamErr
 	}
 
@@ -73,7 +73,7 @@ func (s *teamInviteService) InviteByEmail(ctx context.Context, email, ownerId st
 	existingTeamInvite, existingErr := s.teamInviteRepository.GetByEmailAndTeamId(ctx, email, team.Id)
 
 	if existingErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to get team invite by email: %s", existingErr))
+		s.logger.Errorf("failed to get team invite by email: %s", existingErr)
 		return existingErr
 	}
 
@@ -88,7 +88,7 @@ func (s *teamInviteService) InviteByEmail(ctx context.Context, email, ownerId st
 	token, expiresAt, tokenErr := s.tokenService.GenerateTeamInviteToken(team.Id, email)
 
 	if tokenErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to generate team invite token: %s", tokenErr))
+		s.logger.Errorf("failed to generate team invite token: %s", tokenErr)
 		return tokenErr
 	}
 
@@ -100,7 +100,7 @@ func (s *teamInviteService) InviteByEmail(ctx context.Context, email, ownerId st
 	})
 
 	if inviteErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to create team invite: %s", inviteErr))
+		s.logger.Errorf("failed to create team invite: %s", inviteErr)
 		return inviteErr
 	}
 
@@ -113,7 +113,7 @@ func (s *teamInviteService) InviteByEmail(ctx context.Context, email, ownerId st
 	sendErr := s.emailSender.SendTeamInvite(ctx, job)
 
 	if sendErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to send team invite: %s", sendErr))
+		s.logger.Errorf("failed to send team invite: %s", sendErr)
 		return sendErr
 	}
 
@@ -124,13 +124,13 @@ func (s *teamInviteService) AcceptInvite(ctx context.Context, token string) erro
 	invite, inviteErr := s.verifyTeamInviteByToken(ctx, token)
 
 	if inviteErr != nil {
-		return inviteErr
+		return fmt.Errorf("failed to verify team invite by token for accept: %s", inviteErr)
 	}
 
 	existingUser, existingErr := s.userService.GetByEmail(ctx, invite.Email)
 
 	if existingErr != nil {
-		return existingErr
+		return fmt.Errorf("failed to get user by email: %s", existingErr)
 	}
 
 	if existingUser != nil {
@@ -140,7 +140,7 @@ func (s *teamInviteService) AcceptInvite(ctx context.Context, token string) erro
 	newUser, newUserErr := s.userService.CreateEmptyUserByEmail(ctx, invite.Email)
 
 	if newUserErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to create user by email: %s", newUserErr))
+		s.logger.Errorf("failed to create user by email: %s", newUserErr)
 		return newUserErr
 	}
 
@@ -151,7 +151,7 @@ func (s *teamInviteService) changeUserTeam(ctx context.Context, invite *models.T
 	changeErr := s.userService.ChangeUserTeam(ctx, invite.TeamId, user)
 
 	if changeErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to change user team: %s", changeErr))
+		s.logger.Errorf("failed to change user team: %s", changeErr)
 		return changeErr
 	}
 
@@ -162,7 +162,7 @@ func (s *teamInviteService) verifyTeamInviteByToken(ctx context.Context, token s
 	inviteClaims, inviteClaimsErr := s.tokenService.VerifyTeamInviteToken(token)
 
 	if inviteClaimsErr != nil {
-		return nil, inviteClaimsErr
+		return nil, fmt.Errorf("failed to verify team invite token: %s", inviteClaimsErr)
 	}
 
 	if inviteClaims.IsExpired() {
@@ -172,7 +172,7 @@ func (s *teamInviteService) verifyTeamInviteByToken(ctx context.Context, token s
 	invite, inviteErr := s.teamInviteRepository.GetByToken(ctx, token)
 
 	if inviteErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to get team invite by token: %s", inviteErr))
+		s.logger.Errorf("failed to get team invite by token: %s", inviteErr)
 		return nil, inviteErr
 	}
 
@@ -193,7 +193,7 @@ func (s *teamInviteService) verifyTeamInviteByToken(ctx context.Context, token s
 	}
 
 	if invite.Email != inviteClaims.Email {
-		s.logger.Warn(fmt.Sprintf("email mismatch in invite: %s != %s", invite.Email, inviteClaims.Email))
+		s.logger.Warnf("email mismatch in invite: %s != %s", invite.Email, inviteClaims.Email)
 		return nil, api_errors.ErrorInvalidToken
 	}
 
@@ -204,7 +204,7 @@ func (s *teamInviteService) CancelInvite(ctx context.Context, token string) erro
 	invite, inviteErr := s.verifyTeamInviteByToken(ctx, token)
 
 	if inviteErr != nil {
-		return inviteErr
+		return fmt.Errorf("failed to verify team invite by token for cancel: %s", inviteErr)
 	}
 
 	return s.teamInviteRepository.MarkAsCancelled(ctx, invite.Id)

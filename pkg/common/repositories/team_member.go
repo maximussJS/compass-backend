@@ -6,6 +6,7 @@ import (
 	"compass-backend/pkg/common/infrastructure"
 	"compass-backend/pkg/common/models"
 	"context"
+	"fmt"
 	"go.uber.org/fx"
 	"gorm.io/gorm"
 )
@@ -46,7 +47,7 @@ func (r *teamMemberRepository) Get(ctx context.Context, teamId, userId string) (
 			return nil, nil
 		}
 
-		return nil, err
+		return nil, fmt.Errorf("error getting team member: %w", err)
 	}
 
 	return teamMember, nil
@@ -55,7 +56,7 @@ func (r *teamMemberRepository) Get(ctx context.Context, teamId, userId string) (
 func (r *teamMemberRepository) Create(ctx context.Context, member models.TeamMember) error {
 	err := r.db.WithContext(ctx).Create(&member).Error
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create team member: %w", err)
 	}
 
 	return nil
@@ -66,7 +67,7 @@ func (r *teamMemberRepository) GetAllByTeamId(ctx context.Context, teamId string
 	err := r.db.WithContext(ctx).Where("team_id = ?", teamId).Find(&teamMembers).Error
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get team members by team id: %w", err)
 	}
 
 	return teamMembers, nil
@@ -77,7 +78,7 @@ func (r *teamMemberRepository) Delete(ctx context.Context, teamId, userId string
 	err := r.db.WithContext(ctx).Where("team_id = ? AND user_id = ?", teamId, userId).Delete(&models.TeamMember{}).Error
 
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to delete team member: %w", err)
 	}
 
 	return nil

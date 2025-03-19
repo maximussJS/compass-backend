@@ -7,7 +7,6 @@ import (
 	fx_utils "compass-backend/pkg/common/fx"
 	common_lib "compass-backend/pkg/common/lib"
 	"compass-backend/pkg/common/models"
-	"fmt"
 	"go.uber.org/fx"
 )
 
@@ -52,7 +51,7 @@ func (s *tokenService) GenerateAuthorizationToken(user *models.User) (string, er
 	token, tokenErr := s.jwt.Generate(authClaims)
 
 	if tokenErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to generate auth token: %s", tokenErr))
+		s.logger.Errorf("failed to generate auth token: %s", tokenErr)
 		return "", tokenErr
 	}
 
@@ -77,7 +76,7 @@ func (s *tokenService) GenerateTeamInviteToken(teamId, email string) (token stri
 	token, err = s.jwt.Generate(inviteClaims)
 
 	if err != nil {
-		s.logger.Error(fmt.Sprintf("failed to generate invite token: %s", err))
+		s.logger.Errorf("failed to generate invite token: %s", err)
 		return "", 0, err
 	}
 
@@ -104,7 +103,7 @@ func (s *tokenService) GenerateConfirmEmailToken(userId string) (string, error) 
 	token, tokenErr := s.jwt.Generate(confirmEmailClaims)
 
 	if tokenErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to generate confirm email token: %s", tokenErr))
+		s.logger.Errorf("failed to generate confirm email token: %s", tokenErr)
 		return "", tokenErr
 	}
 

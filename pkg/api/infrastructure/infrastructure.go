@@ -11,7 +11,6 @@ import (
 )
 
 var Module = fx.Options(
-	FxCloudinary(),
 	common_infrastracture.FxRouter(),
 	common_infrastracture.FxRedis(),
 	common_infrastracture.FxDatabase(),

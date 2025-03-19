@@ -19,7 +19,7 @@ func FxUserVerifiedMiddleware() fx.Option {
 	return fx_utils.AsProvider(newUserVerifiedMiddleware, new(IUserVerifiedMiddleware))
 }
 
-func newUserVerifiedMiddleware() ITrainerMiddleware {
+func newUserVerifiedMiddleware() IUserVerifiedMiddleware {
 	return &userVerifiedMiddleware{}
 }
 

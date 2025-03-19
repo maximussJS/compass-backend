@@ -15,7 +15,6 @@ type teamInviteRoute struct {
 	router                  common_infrastracture.IRouter
 	teamInviteController    controllers.ITeamInviteController
 	authorizationMiddleware middlewares.IAuthorizationMiddleware
-	trainerMiddleware       middlewares.ITrainerMiddleware
 }
 
 type teamInviteRouteParams struct {
@@ -24,7 +23,6 @@ type teamInviteRouteParams struct {
 	Logger                  common_lib.ILogger
 	TeamInviteController    controllers.ITeamInviteController
 	AuthorizationMiddleware middlewares.IAuthorizationMiddleware
-	TrainerMiddleware       middlewares.ITrainerMiddleware
 	Router                  common_infrastracture.IRouter
 }
 
@@ -38,7 +36,6 @@ func newTeamInviteRoute(params teamInviteRouteParams) common_routes.IRoute {
 		router:                  params.Router,
 		teamInviteController:    params.TeamInviteController,
 		authorizationMiddleware: params.AuthorizationMiddleware,
-		trainerMiddleware:       params.TrainerMiddleware,
 	}
 }
 
@@ -49,7 +46,6 @@ func (h *teamInviteRoute) Setup() {
 
 	group.POST("/send-by-email",
 		h.authorizationMiddleware.Handle(),
-		h.trainerMiddleware.Handle(),
 		h.teamInviteController.InviteByEmail,
 	)
 

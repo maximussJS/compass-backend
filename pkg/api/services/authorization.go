@@ -70,7 +70,7 @@ func (s *authorizationService) SignUpByPassword(ctx context.Context, dto authori
 	existingUser, userErr := s.userService.GetByEmail(ctx, dto.Email)
 
 	if userErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to get user by email: %s", userErr))
+		s.logger.Errorf("failed to get user by email: %s", userErr)
 		return nil, userErr
 	}
 
@@ -81,7 +81,7 @@ func (s *authorizationService) SignUpByPassword(ctx context.Context, dto authori
 	newUser, newUserErr := s.userService.CreateUserByCredentials(ctx, dto.Email, dto.Name, dto.Password)
 
 	if newUserErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to create user by credentials: %s", newUserErr))
+		s.logger.Errorf("failed to create user by credentials: %s", newUserErr)
 		return nil, newUserErr
 	}
 
@@ -98,12 +98,12 @@ func (s *authorizationService) GetUserByToken(ctx context.Context, token string)
 	user, userErr := s.userService.GetById(ctx, authClaims.UserId)
 
 	if userErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to get user by id: %s", userErr))
+		s.logger.Errorf("failed to get user by id: %s", userErr)
 		return nil, userErr
 	}
 
 	if user == nil {
-		s.logger.Warn(fmt.Sprintf("user not found by id %s, but the token is valid %s", authClaims.UserId, token))
+		s.logger.Warnf("user not found by id %s, but the token is valid %s", authClaims.UserId, token)
 		return nil, api_errors.ErrorInvalidToken
 	}
 

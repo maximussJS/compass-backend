@@ -6,7 +6,7 @@ import (
 
 const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+=-"
 
-func GeneratePassword() string {
+func GenerateRandomPassword() string {
 	var password []byte
 
 	for i := 0; i < 16; i++ {

@@ -11,8 +11,7 @@ var Module = fx.Options(
 	FxUserService(),
 	FxTokenService(),
 	FxAuthorizationService(),
-	FxCategoryService(),
 	FxTeamInviteService(),
 	FxTeamService(),
-	FxExerciseService(),
+	FxAccessKeyService(),
 )

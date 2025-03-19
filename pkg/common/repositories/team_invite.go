@@ -7,6 +7,7 @@ import (
 	"compass-backend/pkg/common/infrastructure"
 	"compass-backend/pkg/common/models"
 	"context"
+	"fmt"
 	"go.uber.org/fx"
 	"gorm.io/gorm"
 )
@@ -51,7 +52,7 @@ func (r *teamInviteRepository) GetById(ctx context.Context, id string) (*models.
 			return nil, nil
 		}
 
-		return nil, err
+		return nil, fmt.Errorf("failed to get team invite by id: %w", err)
 	}
 
 	return teamInvite, nil
@@ -66,7 +67,7 @@ func (r *teamInviteRepository) GetByToken(ctx context.Context, token string) (*m
 			return nil, nil
 		}
 
-		return nil, err
+		return nil, fmt.Errorf("failed to get team invite by token: %w", err)
 	}
 
 	return teamInvite, nil
@@ -81,7 +82,7 @@ func (r *teamInviteRepository) GetByEmailAndTeamId(ctx context.Context, email, t
 			return nil, nil
 		}
 
-		return nil, err
+		return nil, fmt.Errorf("failed to get team invite by email and team id: %w", err)
 	}
 
 	return teamInvite, nil
@@ -90,7 +91,7 @@ func (r *teamInviteRepository) GetByEmailAndTeamId(ctx context.Context, email, t
 func (r *teamInviteRepository) Create(ctx context.Context, invite models.TeamInvite) (string, error) {
 	err := r.db.WithContext(ctx).Create(&invite).Error
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to create team invite: %w", err)
 	}
 
 	return invite.Id, nil
@@ -100,7 +101,7 @@ func (r *teamInviteRepository) DeleteById(ctx context.Context, id string) error 
 	err := r.db.WithContext(ctx).Where("id = ?", id).Delete(&models.TeamInvite{}).Error
 
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to delete team invite by id: %w", err)
 	}
 
 	return nil
@@ -110,7 +111,7 @@ func (r *teamInviteRepository) UpdateById(ctx context.Context, id string, invite
 	err := r.db.WithContext(ctx).Where("id = ?", id).Updates(&invite).Error
 
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to update team invite by id: %w", err)
 	}
 
 	return nil

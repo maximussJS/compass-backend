@@ -5,12 +5,10 @@ import (
 	dto_team "compass-backend/pkg/api/common/dto/team"
 	common_interfaces "compass-backend/pkg/api/common/interfaces"
 	fx_utils "compass-backend/pkg/common/fx"
-	gorm_utils "compass-backend/pkg/common/gorm"
 	common_lib "compass-backend/pkg/common/lib"
 	common_models "compass-backend/pkg/common/models"
 	common_repositories "compass-backend/pkg/common/repositories"
 	"context"
-	"fmt"
 	"go.uber.org/fx"
 )
 
@@ -48,11 +46,7 @@ func (s *teamService) GetById(ctx context.Context, id string) (*common_models.Te
 	team, err := s.teamRepository.GetById(ctx, id)
 
 	if err != nil {
-		if gorm_utils.IsRecordNotFoundError(err) {
-			return nil, nil
-		}
-
-		s.logger.Error(fmt.Sprintf("failed to get team by id: %s", err))
+		s.logger.Errorf("failed to get team by id: %s", err)
 		return nil, err
 	}
 
@@ -63,7 +57,7 @@ func (s *teamService) Create(ctx context.Context, ownerId string, dto dto_team.C
 	existingTeam, existingErr := s.teamRepository.GetByOwnerId(ctx, ownerId)
 
 	if existingErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to get team by owner id %s %s", ownerId, existingErr))
+		s.logger.Errorf("failed to get team by owner id %s %s", ownerId, existingErr)
 		return nil, existingErr
 	}
 
@@ -77,14 +71,14 @@ func (s *teamService) Create(ctx context.Context, ownerId string, dto dto_team.C
 	})
 
 	if createErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to create team: %s", createErr))
+		s.logger.Errorf("failed to create team: %s", createErr)
 		return nil, createErr
 	}
 
 	team, getErr := s.teamRepository.GetById(ctx, id)
 
 	if getErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to get team by id: %s", getErr))
+		s.logger.Errorf("failed to get team by id: %s", getErr)
 		return nil, getErr
 	}
 
@@ -95,14 +89,14 @@ func (s *teamService) UpdateById(ctx context.Context, id string, dto dto_team.Up
 	err := s.teamRepository.UpdateById(ctx, id, dto.ToModel())
 
 	if err != nil {
-		s.logger.Error(fmt.Sprintf("failed to update team: %s", err))
+		s.logger.Errorf("failed to update team: %s", err)
 		return nil, err
 	}
 
 	team, err := s.teamRepository.GetById(ctx, id)
 
 	if err != nil {
-		s.logger.Error(fmt.Sprintf("failed to get team by id: %s", err))
+		s.logger.Errorf("failed to get team by id: %s", err)
 		return nil, err
 	}
 
@@ -113,7 +107,7 @@ func (s *teamService) DeleteById(ctx context.Context, id string) error {
 	err := s.teamRepository.DeleteById(ctx, id)
 
 	if err != nil {
-		s.logger.Error(fmt.Sprintf("failed to delete team: %s", err))
+		s.logger.Errorf("failed to delete team: %s", err)
 		return err
 	}
 

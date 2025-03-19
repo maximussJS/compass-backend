@@ -77,7 +77,7 @@ func (s *userService) ConfirmEmail(ctx context.Context, token string) error {
 	user, err := s.userRepository.GetById(ctx, claims.UserId)
 
 	if err != nil {
-		s.logger.Error(fmt.Sprintf("failed to get user by id: %s", err))
+		s.logger.Errorf("failed to get user by id: %s", err)
 		return err
 	}
 
@@ -94,7 +94,7 @@ func (s *userService) ConfirmEmail(ctx context.Context, token string) error {
 	})
 
 	if err != nil {
-		s.logger.Error(fmt.Sprintf("failed to update user: %s", err))
+		s.logger.Errorf("failed to update user: %s", err)
 		return err
 	}
 
@@ -111,7 +111,7 @@ func (s *userService) ChangeName(ctx context.Context, user *models.User, request
 	})
 
 	if err != nil {
-		s.logger.Error(fmt.Sprintf("failed to update user name: %s", err))
+		s.logger.Errorf("failed to update user name: %s", err)
 		return err
 	}
 
@@ -132,7 +132,7 @@ func (s *userService) ChangePassword(ctx context.Context, user *models.User, req
 	hashedPassword, hashErr := crypto_utils.Hash(request.Password)
 
 	if hashErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to hash password: %s", hashErr))
+		s.logger.Errorf("failed to hash password: %s", hashErr)
 		return hashErr
 	}
 
@@ -141,7 +141,7 @@ func (s *userService) ChangePassword(ctx context.Context, user *models.User, req
 	})
 
 	if err != nil {
-		s.logger.Error(fmt.Sprintf("failed to update user password: %s", err))
+		s.logger.Errorf("failed to update user password: %s", err)
 		return err
 	}
 
@@ -152,7 +152,7 @@ func (s *userService) GetByEmail(ctx context.Context, email string) (*models.Use
 	user, err := s.userRepository.GetByEmail(ctx, email)
 
 	if err != nil {
-		s.logger.Error(fmt.Sprintf("failed to get user by email: %s", err))
+		s.logger.Errorf("failed to get user by email: %s", err)
 		return nil, err
 	}
 
@@ -163,7 +163,7 @@ func (s *userService) GetById(ctx context.Context, id string) (*models.User, err
 	user, err := s.userRepository.GetById(ctx, id)
 
 	if err != nil {
-		s.logger.Error(fmt.Sprintf("failed to get user by id: %s", err))
+		s.logger.Errorf("failed to get user by id: %s", err)
 		return nil, err
 	}
 
@@ -174,7 +174,7 @@ func (s *userService) CreateUserByCredentials(ctx context.Context, email, name, 
 	hashedPassword, hashErr := crypto_utils.Hash(password)
 
 	if hashErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to hash password: %s", hashErr))
+		s.logger.Errorf("failed to hash password: %s", hashErr)
 		return nil, hashErr
 	}
 
@@ -189,14 +189,14 @@ func (s *userService) CreateUserByCredentials(ctx context.Context, email, name, 
 	id, createErr := s.userRepository.Create(ctx, user)
 
 	if createErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to create user: %s", createErr))
+		s.logger.Errorf("failed to create user: %s", createErr)
 		return nil, createErr
 	}
 
 	confirmEmailToken, tokenErr := s.tokenService.GenerateConfirmEmailToken(id)
 
 	if tokenErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to generate confirm email token: %s", tokenErr))
+		s.logger.Errorf("failed to generate confirm email token: %s", tokenErr)
 		return nil, tokenErr
 	}
 
@@ -209,14 +209,14 @@ func (s *userService) CreateUserByCredentials(ctx context.Context, email, name, 
 	sendErr := s.emailSender.SendUserRegistered(ctx, job)
 
 	if sendErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to send user registered email: %s", sendErr))
+		s.logger.Errorf("failed to send user registered email: %s", sendErr)
 		return nil, sendErr
 	}
 
 	newUser, newUserErr := s.userRepository.GetById(ctx, id)
 
 	if newUserErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to get new user by id: %s", newUserErr))
+		s.logger.Errorf("failed to get new user by id: %s", newUserErr)
 		return nil, newUserErr
 	}
 
@@ -224,12 +224,12 @@ func (s *userService) CreateUserByCredentials(ctx context.Context, email, name, 
 }
 
 func (s *userService) CreateEmptyUserByEmail(ctx context.Context, email string) (*models.User, error) {
-	userPassword := password.GeneratePassword()
+	userPassword := password.GenerateRandomPassword()
 
 	hashedPassword, hashErr := crypto_utils.Hash(userPassword)
 
 	if hashErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to hash password: %s", hashErr))
+		s.logger.Errorf("failed to hash password: %s", hashErr)
 		return nil, hashErr
 	}
 
@@ -242,7 +242,7 @@ func (s *userService) CreateEmptyUserByEmail(ctx context.Context, email string) 
 	})
 
 	if createErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to create user: %s", createErr))
+		s.logger.Errorf("failed to create user: %s", createErr)
 		return nil, createErr
 	}
 
@@ -254,14 +254,14 @@ func (s *userService) CreateEmptyUserByEmail(ctx context.Context, email string) 
 	sendErr := s.emailSender.SendEmptyUserCreated(ctx, job)
 
 	if sendErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to send empty user created email: %s", sendErr))
+		s.logger.Errorf("failed to send empty user created email: %s", sendErr)
 		return nil, sendErr
 	}
 
 	user, getErr := s.userRepository.GetById(ctx, id)
 
 	if getErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to get user: %s", getErr))
+		s.logger.Errorf("failed to get user: %s", getErr)
 		return nil, getErr
 	}
 
@@ -279,7 +279,7 @@ func (s *userService) ChangeUserTeam(ctx context.Context, teamId string, user *m
 	})
 
 	if createErr != nil {
-		s.logger.Error(fmt.Sprintf("failed to create team member: %s", createErr))
+		s.logger.Errorf("failed to create team member: %s", createErr)
 		return createErr
 	}
 

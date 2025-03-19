@@ -7,10 +7,9 @@ import (
 
 var Module = fx.Options(
 	common_controllers.FxHealthCheckController(),
-	FxCategoryController(),
 	FxAuthorizationController(),
 	FxTeamInviteController(),
 	FxTeamController(),
 	FxUserController(),
-	FxExerciseController(),
+	FxAccessKeyController(),
 )
